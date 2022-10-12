@@ -1,0 +1,408 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "id": "mP7tlI3JX-JU"
+      },
+      "outputs": [],
+      "source": [
+        "from google.colab import drive"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "jFXQo5NbaJ9C",
+        "outputId": "cb05728b-6cf8-48f7-cf51-e8ac456547ef"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/drive\n"
+          ]
+        }
+      ],
+      "source": [
+        "drive.mount('/content/drive')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "metadata": {
+        "id": "3mQ2bla-3TKe"
+      },
+      "outputs": [],
+      "source": [
+        "import keras"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {
+        "id": "aLQsXP4J3Y4J"
+      },
+      "outputs": [],
+      "source": [
+        "import tensorflow as tf"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 6,
+      "metadata": {
+        "id": "aRuUqcjISQK0"
+      },
+      "outputs": [],
+      "source": [
+        "from keras.preprocessing.image import ImageDataGenerator"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 7,
+      "metadata": {
+        "id": "8Yahg1WgoDQa"
+      },
+      "outputs": [],
+      "source": [
+        "datagen=ImageDataGenerator(\n",
+        "    rotation_range=45,\n",
+        "    width_shift_range=0.2,\n",
+        "    height_shift_range=0.2,\n",
+        "    shear_range=0.2,\n",
+        "    zoom_range=0.2,\n",
+        "    horizontal_flip=True,\n",
+        "    fill_mode='reflect',\n",
+        "    validation_split=0.2)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 8,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "9b6cxgNk6Vrt",
+        "outputId": "65d2302f-eacb-4963-d43a-9dbbdfc13739"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 3457 images belonging to 5 classes.\n"
+          ]
+        }
+      ],
+      "source": [
+        "xtrain=datagen.flow_from_directory('/content/drive/MyDrive/flowers',class_mode='categorical',target_size=(64,64),batch_size=100,\n",
+        "                                   subset='training')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 9,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Up2vHeTm61r_",
+        "outputId": "69ca2689-bda0-4328-f5c8-d97abe090604"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 860 images belonging to 5 classes.\n"
+          ]
+        }
+      ],
+      "source": [
+        "xtest=datagen.flow_from_directory('/content/drive/MyDrive/flowers',class_mode='categorical',target_size=(64,64),batch_size=100,subset='validation')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 10,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "j5LTFcd-2ut-",
+        "outputId": "69ce529e-0424-4227-d332-72fc8ed34777"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(100, 64, 64, 3)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 10
+        }
+      ],
+      "source": [
+        "xtest[2][0].shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 11,
+      "metadata": {
+        "id": "RhxjmgG_zCEd"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras.models import Sequential\n",
+        "from tensorflow.keras.layers import Convolution2D,MaxPooling2D,Flatten,Dense"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 12,
+      "metadata": {
+        "id": "zQitEXML1UBU"
+      },
+      "outputs": [],
+      "source": [
+        "model=Sequential()\n",
+        "model.add(Convolution2D(64,(3,3),activation='relu',input_shape=(64,64,3)))\n",
+        "model.add(MaxPooling2D(pool_size=(2,2)))\n",
+        "model.add(Flatten())\n",
+        "model.add(Dense(300,activation='relu'))\n",
+        "model.add(Dense(150,activation='relu'))\n",
+        "model.add(Dense(5,activation='softmax'))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 13,
+      "metadata": {
+        "id": "JejMB6UIbJDL"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.python import metrics\n",
+        "model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "background_save": true,
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "CBjTrYcpbuOj",
+        "outputId": "afef1cc8-ba73-4326-c99a-e0bd1ef2cb24"
+      },
+      "outputs": [
+        {
+          "name": "stderr",
+          "output_type": "stream",
+          "text": [
+            "/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:5: UserWarning: `Model.fit_generator` is deprecated and will be removed in a future version. Please use `Model.fit`, which supports generators.\n",
+            "  \"\"\"\n"
+          ]
+        },
+        {
+          "name": "stdout",
+          "output_type": "stream",
+          "text": [
+            "Epoch 1/20\n",
+            "35/35 [==============================] - 43s 1s/step - loss: 345.5278 - accuracy: 0.2583 - val_loss: 17.5657 - val_accuracy: 0.3779\n",
+            "Epoch 2/20\n",
+            "35/35 [==============================] - 42s 1s/step - loss: 7.1812 - accuracy: 0.4082 - val_loss: 3.0522 - val_accuracy: 0.4442\n",
+            "Epoch 3/20\n",
+            "35/35 [==============================] - 41s 1s/step - loss: 2.2137 - accuracy: 0.4738 - val_loss: 2.1384 - val_accuracy: 0.4547\n",
+            "Epoch 4/20\n",
+            "35/35 [==============================] - 42s 1s/step - loss: 1.7316 - accuracy: 0.4782 - val_loss: 1.7625 - val_accuracy: 0.4721\n",
+            "Epoch 5/20\n",
+            "35/35 [==============================] - 41s 1s/step - loss: 1.4986 - accuracy: 0.4967 - val_loss: 1.7765 - val_accuracy: 0.4512\n",
+            "Epoch 6/20\n",
+            "35/35 [==============================] - 42s 1s/step - loss: 1.4566 - accuracy: 0.4993 - val_loss: 1.7542 - val_accuracy: 0.4849\n",
+            "Epoch 7/20\n",
+            "35/35 [==============================] - 43s 1s/step - loss: 1.3985 - accuracy: 0.5074 - val_loss: 1.5782 - val_accuracy: 0.4907\n",
+            "Epoch 8/20\n",
+            "35/35 [==============================] - 42s 1s/step - loss: 1.3607 - accuracy: 0.4944 - val_loss: 1.4549 - val_accuracy: 0.5093\n",
+            "Epoch 9/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.3374 - accuracy: 0.5080 - val_loss: 1.5514 - val_accuracy: 0.5058\n",
+            "Epoch 10/20\n",
+            "35/35 [==============================] - 44s 1s/step - loss: 1.2963 - accuracy: 0.5392 - val_loss: 1.4035 - val_accuracy: 0.5279\n",
+            "Epoch 11/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.2910 - accuracy: 0.5343 - val_loss: 1.6415 - val_accuracy: 0.5314\n",
+            "Epoch 12/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.3198 - accuracy: 0.5230 - val_loss: 1.4465 - val_accuracy: 0.5291\n",
+            "Epoch 13/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.2577 - accuracy: 0.5482 - val_loss: 1.4442 - val_accuracy: 0.5233\n",
+            "Epoch 14/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.3220 - accuracy: 0.5276 - val_loss: 1.6376 - val_accuracy: 0.4988\n",
+            "Epoch 15/20\n",
+            "35/35 [==============================] - 41s 1s/step - loss: 1.3086 - accuracy: 0.5412 - val_loss: 1.5790 - val_accuracy: 0.5233\n",
+            "Epoch 16/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.2481 - accuracy: 0.5461 - val_loss: 1.5483 - val_accuracy: 0.5140\n",
+            "Epoch 17/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.2957 - accuracy: 0.5412 - val_loss: 1.5983 - val_accuracy: 0.5140\n",
+            "Epoch 18/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.2793 - accuracy: 0.5349 - val_loss: 1.4475 - val_accuracy: 0.5698\n",
+            "Epoch 19/20\n",
+            "35/35 [==============================] - 41s 1s/step - loss: 1.2288 - accuracy: 0.5551 - val_loss: 1.4555 - val_accuracy: 0.5372\n",
+            "Epoch 20/20\n",
+            "35/35 [==============================] - 40s 1s/step - loss: 1.2426 - accuracy: 0.5479 - val_loss: 1.5296 - val_accuracy: 0.5349\n"
+          ]
+        },
+        {
+          "data": {
+            "text/plain": [
+              "<keras.callbacks.History at 0x7f46081bf990>"
+            ]
+          },
+          "execution_count": 69,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "model.fit_generator(xtrain,\n",
+        "                    steps_per_epoch=len(xtrain),\n",
+        "                    epochs=20,\n",
+        "                    validation_data=xtest,\n",
+        "                    validation_steps=len(xtest))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 15,
+      "metadata": {
+        "id": "tH8ExFEEc_xM"
+      },
+      "outputs": [],
+      "source": [
+        "model.save('flower_5.h5')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 14,
+      "metadata": {
+        "id": "Cj3c3EZycUnH"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras.preprocessing import image\n",
+        "import numpy as np"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 16,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "QmLRtGC878xO",
+        "outputId": "75c69b52-0dc5-4b16-fd50-493711144a81"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "{'daisy': 0, 'dandelion': 1, 'rose': 2, 'sunflower': 3, 'tulip': 4}"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 16
+        }
+      ],
+      "source": [
+        "xtrain.class_indices"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 17,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5M1flyC_c703",
+        "outputId": "ea384aae-f6da-49f5-ac18-4ba53c8c41b9"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 17
+        }
+      ],
+      "source": [
+        "classifier=tf.keras.models.load_model('flower_5.h5')\n",
+        "img=tf.keras.utils.load_img(\"/content/drive/MyDrive/flowers/tulip/10094729603_eeca3f2cb6.jpg\",target_size=(64,64))\n",
+        "img_array=tf.keras.utils.img_to_array(img)\n",
+        "img_array=tf.expand_dims(img_array,0)\n",
+        "y_pred=np.argmax(classifier.predict(img_array),axis=1)[0]\n",
+        "y_pred"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 18,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "coTIy64ceOTK",
+        "outputId": "28a6ebb1-c07f-4bea-8881-53a5959eb107"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "This is a daisy\n"
+          ]
+        }
+      ],
+      "source": [
+        "classes=dict(zip(xtrain.class_indices.values(),xtrain.class_indices.keys()))\n",
+        "print(\"This is a\",classes[y_pred])"
+      ]
+    }
+  ],
+  "metadata": {
+    "colab": {
+      "collapsed_sections": [],
+      "provenance": []
+    },
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
