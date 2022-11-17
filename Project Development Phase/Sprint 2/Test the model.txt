@@ -1,0 +1,30 @@
+TEST THE MODEL
+!unzip '/content/drive/MyDrive/IBMPROJECT/conversation engine for deaf and dumb.zip'
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
+import cv2
+model = load_model('/content/Real_time.h5')
+img = image.load_img('/content/Dataset/test_set/H/107.png',target_size = (100,100))
+img
+
+from skimage.transform import resize
+def detect(frame):
+    img=image.img_to_array(frame)
+    img = resize(img,(64,64,1))
+    img = np.expand_dims(img,axis=0)
+    pred=np.argmax(model.predict(img))
+    op=['A','B','C','D','E','F','G','H','I']
+    print("THE PREDICTED LETTER IS ",op[pred])
+img=image.load_img("/content/Dataset/test_set/H/107.png")
+detect(img)
+1/1 [==============================] - 0s 412ms/step
+THE PREDICTED LETTER IS  H
+img = image.load_img('/content/Dataset/test_set/A/110.png')
+pred=detect(img)
+1/1 [==============================] - 0s 23ms/step
+THE PREDICTED LETTER IS  A
+img=image.load_img('/content/Dataset/test_set/F/108.png')
+detect(img)
+1/1 [==============================] - 0s 25ms/step
+THE PREDICTED LETTER IS  F
